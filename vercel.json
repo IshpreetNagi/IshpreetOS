@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "pnpm build",
+  "outputDirectory": ".next",
+  "installCommand": "pnpm install",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  }
+}
