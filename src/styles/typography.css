@@ -1,0 +1,12 @@
+/* Temporary system fallbacks; licensed local fonts are chosen in the visual phase. */
+@theme {
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-serif: "Times New Roman", Times, serif;
+  --font-mono: "Cascadia Code", Consolas, monospace;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-serif);
+  }
+}

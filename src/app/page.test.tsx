@@ -2,8 +2,9 @@ import { render, screen } from "@testing-library/react";
 import Home from "./page";
 
 describe("Home", () => {
-  it("renders the heading", () => {
+  it("renders the project placeholder with a main landmark", () => {
     render(<Home />);
-    expect(screen.getByText(/to get started/i)).toBeInTheDocument();
+    expect(screen.getByRole("main")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "IshpreetOS", level: 1 })).toBeInTheDocument();
   });
 });

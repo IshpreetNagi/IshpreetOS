@@ -1,6 +1,22 @@
 # IshpreetOS
 
-IshpreetOS is a retro-modern portfolio presented as a personal operating system. It combines familiar desktop interactions with real web routes, responsive behavior, accessible controls, and content-first application windows.
+IshpreetOS is a retro-modern portfolio being built as a personal operating system, with familiar desktop interactions, real web routes, responsive behavior, and content-first application windows.
+
+The repository is currently in P0 (foundation). The homepage is a temporary construction page; the OS shell and applications arrive in later phases.
+
+## Run locally
+
+Use Node 22 and pnpm 11.11.0, then run:
+
+```powershell
+pnpm install --frozen-lockfile
+Copy-Item .env.example .env.local
+pnpm dev
+```
+
+Copy the environment file only if `.env.local` does not already exist. On macOS/Linux, use `cp` instead of `Copy-Item`. Open [localhost:3000](http://localhost:3000).
+
+Run `pnpm check:all` for lint, type checks, content syntax validation, unit/component tests, and a production build. See [testing and phase gates](docs/testing.md) for browser tests and Vercel setup.
 
 ## Project documentation
 
