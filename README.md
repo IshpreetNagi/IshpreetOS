@@ -21,6 +21,7 @@ Run `pnpm check:all` for lint, type checks, content syntax validation, unit/comp
 ## Project documentation
 
 - [Documentation index](docs/README.md) — the guide to planning and future implementation documentation
+- [Working with Codex](docs/workflow.md) — owner decisions, corrections, and the AI-assisted development workflow, with the latest entries first
 - [Project Handbook](docs/planning/PROJECT_HANDBOOK.md) — the governing product, design, architecture, implementation, and release specification
 - [Designed PDF Handbook](docs/planning/PROJECT_HANDBOOK.pdf) — the presentation edition of the same planning baseline
 
