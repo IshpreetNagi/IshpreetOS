@@ -21,6 +21,10 @@ Implementation documents record the current foundation and the approved contract
 
 These files should describe the system that actually exists in code. The handbook defines the approved plan; implementation documents evolve with the implementation.
 
+## Working with agentic AI
+
+[Working with Codex](workflow.md) records how Ishpreet directs, reviews, corrects, and verifies AI-assisted work. Entries describe the decisions and fixes in reverse chronological order: newest at the top, oldest at the bottom. Use the short entry template, preserve Ishpreet's edits, and keep notable entries with the PR that introduces the decision or correction. Evidence sections and detailed verification records are not required.
+
 ## Documentation rules
 
 - Keep planning artifacts inside `docs/planning`.
