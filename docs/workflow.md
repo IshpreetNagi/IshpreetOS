@@ -2,6 +2,18 @@
 
 I am building IshpreetOS, a personal portfolio presented as an operating system, with Codex as an implementation partner. I set the product direction, choose the scope, write code, review the results, and decide what merges. Codex helps explore tradeoffs, helps write some code and tests, and investigates failures.
 
+## The review loop
+
+1. **I own the decisions.** I define the task and its acceptance criteria using the Notion board and [project handbook](planning/PROJECT_HANDBOOK.md), challenging or changing proposals that do not fit the project.
+2. **Codex implements within scope.** It works on the bounded task on a working branch and explains changes, tests, and limitations.
+3. **I review and verify the work myself.** I read the code, tests, and documentation, ask questions when something is unclear, run automated tests, and manually check behavior.
+4. **I follow failures through to a fix.** When something fails or is wrong, I investigate, correct it, and rerun the relevant checks.
+5. **I gate progress on verification.** I verify the result outside the local environment through GitHub CI and the Vercel deployment. I accept the work, merge, and move to the next phase only after the relevant checks pass and I have reviewed the result.
+
+[AGENTS.md](../AGENTS.md) makes the working boundaries explicit. The handbook governs product behavior and is updated when a product decision changes; this field note records why I accepted or changed a proposal.
+
+Tests written by the same agent that wrote the implementation need review too. A green run is evidence for the assertions exercised, not proof that every requirement or environment is covered. I distinguish unit tests, browser tests, builds, and deployment checks before treating a task as complete.
+
 ## Key decisions and results
 
 - I required a tested foundation before starting OS features. P0 reached 21 passing unit and component tests, one green Chromium end-to-end journey against a production server, and passing GitHub CI before I merged it.
@@ -11,17 +23,6 @@ I am building IshpreetOS, a personal portfolio presented as an operating system,
 - I requested a publishable Markdown handbook and consolidated repository documentation so future contributors and AI sessions have a version-controlled source of truth beyond the chat.
 
 The decision log below gives the context, reasoning, corrections, and verification behind these highlights.
-
-## The review loop
-
-1. I define the task and its acceptance criteria using the Notion board and [project handbook](planning/PROJECT_HANDBOOK.md), challenging or changing proposals that do not fit the project.
-2. Codex implements the bounded task on a working branch and explains changes, tests, and limitations.
-3. I review the code, tests, and documentation, ask questions when something is unclear, run automated tests, and manually check behavior. When something fails or is wrong, I investigate, correct it, and rerun the relevant checks.
-4. I verify the result outside the local environment through GitHub CI and the Vercel deployment. I accept the work, merge, and move to the next phase only after the relevant checks pass and I have reviewed the result.
-
-[AGENTS.md](../AGENTS.md) makes the working boundaries explicit. The handbook governs product behavior and is updated when a product decision changes; this field note records why I accepted or changed a proposal.
-
-Tests written by the same agent that wrote the implementation need review too. A green run is evidence for the assertions exercised, not proof that every requirement or environment is covered. I distinguish unit tests, browser tests, builds, and deployment checks before treating a task as complete.
 
 ## Decision log
 
