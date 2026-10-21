@@ -2,13 +2,20 @@
 
 I am building IshpreetOS, a personal portfolio presented as an operating system, with Codex as an implementation partner. I set the product direction, choose the scope, write code, review the results, and decide what merges. Codex helps explore tradeoffs, helps write some code and tests, and investigates failures.
 
+My philosphy with Codex is to treat it as a junior engineer: I define the work, review the results, and verify that the implementation meets the requirements. I do not accept work without independent verification.
+
+- **I own the decisions.** I challenge, change, or reject recommendations that do not fit the project.
+- **I review the work.** I read AI-generated code, tests, and documentation, and ask questions when something is unclear.
+- **I verify it myself.** I run automated tests and manually check behavior, including what the tests actually cover.
+- **I follow failures through to a fix.** I investigate problems, correct mistakes, and rerun the relevant checks.
+- **I gate progress on verification.** I accept work and move forward only after review and the relevant checks pass. I retain the final merge decision.
+
 ## The review loop
 
-1. **I own the decisions.** I define the task and its acceptance criteria using the Notion board and [project handbook](planning/PROJECT_HANDBOOK.md), challenging or changing proposals that do not fit the project.
-2. **Codex implements within scope.** It works on the bounded task on a working branch and explains changes, tests, and limitations.
-3. **I review and verify the work myself.** I read the code, tests, and documentation, ask questions when something is unclear, run automated tests, and manually check behavior.
-4. **I follow failures through to a fix.** When something fails or is wrong, I investigate, correct it, and rerun the relevant checks.
-5. **I gate progress on verification.** I verify the result outside the local environment through GitHub CI and the Vercel deployment. I accept the work, merge, and move to the next phase only after the relevant checks pass and I have reviewed the result.
+1. I define the task and its acceptance criteria using the Notion board and [project handbook](planning/PROJECT_HANDBOOK.md).
+2. Codex implements the bounded task on a working branch and explains changes, tests, and limitations.
+3. I review the result, run automated tests, and manually check behavior. Any problems return to implementation and another round of checks.
+4. I check GitHub CI and the Vercel deployment, then decide whether the work is ready to merge and the next phase can begin.
 
 [AGENTS.md](../AGENTS.md) makes the working boundaries explicit. The handbook governs product behavior and is updated when a product decision changes; this field note records why I accepted or changed a proposal.
 
