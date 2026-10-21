@@ -2,7 +2,7 @@
 
 I am building IshpreetOS, a personal portfolio presented as an operating system, with Codex as an implementation partner. I set the product direction, choose the scope, write code, review the results, and decide what merges. Codex helps explore tradeoffs, helps write some code and tests, and investigates failures.
 
-My philosphy with Codex is to treat it as a junior engineer: I define the work, review the results, and verify that the implementation meets the requirements. I do not accept work without independent verification.
+My philosophy with Codex is to treat it as a junior engineer: I define the work, review the results, and verify that the implementation meets the requirements. I do not accept work without independent verification.
 
 - **I own the decisions.** I challenge, change, or reject recommendations that do not fit the project.
 - **I review the work.** I read AI-generated code, tests, and documentation, and ask questions when something is unclear.
