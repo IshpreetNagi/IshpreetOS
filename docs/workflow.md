@@ -2,6 +2,14 @@
 
 I am building IshpreetOS, a personal portfolio presented as an operating system, with Codex as an implementation partner. I set the product direction, choose the scope, write code, review the results, and decide what merges. Codex helps explore tradeoffs, helps write some code and tests, and investigates failures.
 
+## How I use AI and stay accountable
+
+- **I own the decisions.** I define requirements, challenge proposals, and change or reject recommendations that do not fit the project.
+- **I review the work.** I read AI-generated code, tests, and documentation, ask questions when something is unclear, and correct mistakes before accepting the result.
+- **I verify it myself.** I run automated tests and manually check behavior, including reviewing what the tests actually cover.
+- **I follow failures through to a fix.** When a test, build, or deployment fails, I investigate, address the cause, and rerun the relevant checks.
+- **I gate progress on verification.** I accept work and move forward only after reviewing the result and confirming that the relevant tests, manual checks, CI, and deployment checks pass. I retain the final merge decision.
+
 This field note records the decisions and corrections that show how that relationship works. It is intended to highlight the ways I review and verify Codex's work, and to provide a record of the reasoning behind the product's design and implementation. It is not a transcript of every prompt or response, but a curated log of decisions, corrections, and verifications that are significant.
 
 ## The review loop
@@ -33,11 +41,11 @@ Entries 001–005 were first recorded retrospectively on October 20, 2026. Entri
 
 **Verification:** The documentation reorganization checked local links and passed lint/type checks. Its outcome is visible in [the handbook commit](https://github.com/IshpreetNagi/IshpreetOS/commit/3700b46), the [documentation index](README.md), and [repository guidance](../AGENTS.md). This verifies documentation organization; it does not prove future implementations comply with every rule.
 
-### 004 — Keep agent-caught corrections separate from my own findings
+### 004 — Independently review and verify corrections before accepting them
 
 **Stage:** Codex's P0 working implementation, corrected before the foundation commit.
 
-These are implementation problems found by Codex and its checks. I include them to show what the verification loop exercised, not to claim that I personally found or wrote each fix.
+Codex and its checks identified the implementation problems below. I reviewed the resulting changes, ran the tests myself, and manually checked behavior before accepting the work. The table credits Codex for finding and correcting these issues; my role was to independently review and verify the corrections before moving forward.
 
 | Initial implementation or gap                                                                                                        | How it was caught and corrected                                                                                                                                                               | Evidence and limit                                                                                                                                                   |
 | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -45,7 +53,7 @@ These are implementation problems found by Codex and its checks. I include them 
 | ESLint scanned generated Playwright report JavaScript after the first browser failure.                                               | The full gate failed on report output. Codex excluded report, result, and coverage directories while keeping test source linted.                                                              | [ESLint configuration](../eslint.config.mjs). There is no dedicated regression test for the ignore list; the full lint command verifies the current workspace.       |
 | The frontmatter parser supported alternative engines, including JavaScript.                                                          | Codex inspected the dependency and constrained the validator to plain YAML delimiters before parsing. Tests cover executable frontmatter/MDX, malformed YAML, and missing closing delimiters. | [Content validator](../scripts/validate-content.mjs) and [fixture tests](../scripts/validate-content.test.ts). This was preventive review, not an observed attack.   |
 
-**My decision and outcome:** I accepted the final implementation after the verification and deployment review described above. The corrective code and tests are in the merged foundation commit. Automated checks can expose defects in generated code, but the owner still has to assess what the tests establish and what remains outside them.
+**My decision and outcome:** I accepted the final implementation only after my own test runs and manual checks confirmed that it worked as intended, and the relevant CI and deployment checks passed. The corrective code and tests are in the merged foundation commit. My review included checking what the tests establish and what remains outside them; acceptance followed that verification.
 
 ### 003 — Catch a deployment configuration gap after local checks passed
 
