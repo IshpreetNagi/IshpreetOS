@@ -2,24 +2,24 @@
 
 I am building IshpreetOS, a personal portfolio presented as an operating system, with Codex as an implementation partner. I set the product direction, choose the scope, write code, review the results, and decide what merges. Codex helps explore tradeoffs, helps write some code and tests, and investigates failures.
 
-## How I use AI and stay accountable
+## Key decisions and results
 
-- **I own the decisions.** I define requirements, challenge proposals, and change or reject recommendations that do not fit the project.
-- **I review the work.** I read AI-generated code, tests, and documentation, ask questions when something is unclear, and correct mistakes before accepting the result.
-- **I verify it myself.** I run automated tests and manually check behavior, including reviewing what the tests actually cover.
-- **I follow failures through to a fix.** When a test, build, or deployment fails, I investigate, address the cause, and rerun the relevant checks.
-- **I gate progress on verification.** I accept work and move forward only after reviewing the result and confirming that the relevant tests, manual checks, CI, and deployment checks pass. I retain the final merge decision.
+- I required a tested foundation before starting OS features. P0 reached 21 passing unit and component tests, one green Chromium end-to-end journey against a production server, and passing GitHub CI before I merged it.
+- I caught a production-only `NEXT_PUBLIC_SITE_URL` failure on Vercel after local checks passed. I configured the missing deployment value and verified a successful redeployment before merging.
+- Codex's checks caught URL-validation and linting defects, and its dependency review identified a frontmatter-parser risk. I independently reviewed the corrections, ran tests, and manually checked behavior before accepting the work.
+- I changed the proposed product plan: every open app must stay directly accessible from the taskbar, the watchlist stays text-only, and Spotify/weather setup waits until v1.1. These are agreed requirements, not completed OS features.
+- I requested a publishable Markdown handbook and consolidated repository documentation so future contributors and AI sessions have a version-controlled source of truth beyond the chat.
 
-This field note records the decisions and corrections that show how that relationship works. It is intended to highlight the ways I review and verify Codex's work, and to provide a record of the reasoning behind the product's design and implementation. It is not a transcript of every prompt or response, but a curated log of decisions, corrections, and verifications that are significant.
+The decision log below gives the context, reasoning, corrections, and verification behind these highlights.
 
 ## The review loop
 
-1. I define the task and its acceptance criteria using the Notion board and [project handbook](planning/PROJECT_HANDBOOK.md).
+1. I define the task and its acceptance criteria using the Notion board and [project handbook](planning/PROJECT_HANDBOOK.md), challenging or changing proposals that do not fit the project.
 2. Codex implements the bounded task on a working branch and explains changes, tests, and limitations.
-3. I read the result, clarify what I do not understand, and check behavior and test outcomes. Problems return to the same review loop.
-4. I use GitHub CI and the Vercel deployment to check the result outside the local environment, then decide whether to merge.
+3. I review the code, tests, and documentation, ask questions when something is unclear, run automated tests, and manually check behavior. When something fails or is wrong, I investigate, correct it, and rerun the relevant checks.
+4. I verify the result outside the local environment through GitHub CI and the Vercel deployment. I accept the work, merge, and move to the next phase only after the relevant checks pass and I have reviewed the result.
 
-I keep merge and deployment decisions under my control. [AGENTS.md](../AGENTS.md) makes the working boundaries explicit. The handbook governs product behavior; this field note records why I accepted or changed a proposal. A new product decision must also update the handbook.
+[AGENTS.md](../AGENTS.md) makes the working boundaries explicit. The handbook governs product behavior and is updated when a product decision changes; this field note records why I accepted or changed a proposal.
 
 Tests written by the same agent that wrote the implementation need review too. A green run is evidence for the assertions exercised, not proof that every requirement or environment is covered. I distinguish unit tests, browser tests, builds, and deployment checks before treating a task as complete.
 
