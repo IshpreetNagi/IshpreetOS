@@ -2,18 +2,34 @@
 
 I am building IshpreetOS, a personal portfolio presented as an operating system, with Codex as an implementation partner. I set the product direction, choose the scope, write code, review the results, and decide what merges. Codex helps explore tradeoffs, helps write some code and tests, and investigates failures.
 
-This field note records the decisions and corrections that show how that relationship works. It is intended to highlight the ways I review and verify Codex's work, and to provide a record of the reasoning behind the product's design and implementation. It is not a transcript of every prompt or response, but a curated log of decisions, corrections, and verifications that are significant.
+My philosophy with Codex is to treat it as a junior engineer: I define the work, review the results, and verify that the implementation meets the requirements. I do not accept work without independent verification.
+
+- **I own the decisions.** I challenge, change, or reject recommendations that do not fit the project.
+- **I review the work.** I read AI-generated code, tests, and documentation, and ask questions when something is unclear.
+- **I verify it myself.** I run automated tests and manually check behavior, including what the tests actually cover.
+- **I follow failures through to a fix.** I investigate problems, correct mistakes, and rerun the relevant checks.
+- **I gate progress on verification.** I accept work and move forward only after review and the relevant checks pass. I retain the final merge decision.
 
 ## The review loop
 
 1. I define the task and its acceptance criteria using the Notion board and [project handbook](planning/PROJECT_HANDBOOK.md).
 2. Codex implements the bounded task on a working branch and explains changes, tests, and limitations.
-3. I read the result, clarify what I do not understand, and check behavior and test outcomes. Problems return to the same review loop.
-4. I use GitHub CI and the Vercel deployment to check the result outside the local environment, then decide whether to merge.
+3. I review the result, run automated tests, and manually check behavior. Any problems return to implementation and another round of checks.
+4. I check GitHub CI and the Vercel deployment, then decide whether the work is ready to merge and the next phase can begin.
 
-I keep merge and deployment decisions under my control. [AGENTS.md](../AGENTS.md) makes the working boundaries explicit. The handbook governs product behavior; this field note records why I accepted or changed a proposal. A new product decision must also update the handbook.
+[AGENTS.md](../AGENTS.md) makes the working boundaries explicit. The handbook governs product behavior and is updated when a product decision changes; this field note records why I accepted or changed a proposal.
 
 Tests written by the same agent that wrote the implementation need review too. A green run is evidence for the assertions exercised, not proof that every requirement or environment is covered. I distinguish unit tests, browser tests, builds, and deployment checks before treating a task as complete.
+
+## Key decisions and results
+
+- I required a tested foundation before starting OS features. P0 reached 21 passing unit and component tests, one green Chromium end-to-end journey against a production server, and passing GitHub CI before I merged it.
+- I caught a production-only `NEXT_PUBLIC_SITE_URL` failure on Vercel after local checks passed. I configured the missing deployment value and verified a successful redeployment before merging.
+- Codex's checks caught URL-validation and linting defects, and its dependency review identified a frontmatter-parser risk. I independently reviewed the corrections, ran tests, and manually checked behavior before accepting the work.
+- I changed the proposed product plan: every open app must stay directly accessible from the taskbar, the watchlist stays text-only, and Spotify/weather setup waits until v1.1. These are agreed requirements, not completed OS features.
+- I requested a publishable Markdown handbook and consolidated repository documentation so future contributors and AI sessions have a version-controlled source of truth beyond the chat.
+
+The decision log below gives the context, reasoning, corrections, and verification behind these highlights.
 
 ## Decision log
 
@@ -33,11 +49,11 @@ Entries 001–005 were first recorded retrospectively on October 20, 2026. Entri
 
 **Verification:** The documentation reorganization checked local links and passed lint/type checks. Its outcome is visible in [the handbook commit](https://github.com/IshpreetNagi/IshpreetOS/commit/3700b46), the [documentation index](README.md), and [repository guidance](../AGENTS.md). This verifies documentation organization; it does not prove future implementations comply with every rule.
 
-### 004 — Keep agent-caught corrections separate from my own findings
+### 004 — Independently review and verify corrections before accepting them
 
 **Stage:** Codex's P0 working implementation, corrected before the foundation commit.
 
-These are implementation problems found by Codex and its checks. I include them to show what the verification loop exercised, not to claim that I personally found or wrote each fix.
+Codex and its checks identified the implementation problems below. I reviewed the resulting changes, ran the tests myself, and manually checked behavior before accepting the work. The table credits Codex for finding and correcting these issues; my role was to independently review and verify the corrections before moving forward.
 
 | Initial implementation or gap                                                                                                        | How it was caught and corrected                                                                                                                                                               | Evidence and limit                                                                                                                                                   |
 | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -45,7 +61,7 @@ These are implementation problems found by Codex and its checks. I include them 
 | ESLint scanned generated Playwright report JavaScript after the first browser failure.                                               | The full gate failed on report output. Codex excluded report, result, and coverage directories while keeping test source linted.                                                              | [ESLint configuration](../eslint.config.mjs). There is no dedicated regression test for the ignore list; the full lint command verifies the current workspace.       |
 | The frontmatter parser supported alternative engines, including JavaScript.                                                          | Codex inspected the dependency and constrained the validator to plain YAML delimiters before parsing. Tests cover executable frontmatter/MDX, malformed YAML, and missing closing delimiters. | [Content validator](../scripts/validate-content.mjs) and [fixture tests](../scripts/validate-content.test.ts). This was preventive review, not an observed attack.   |
 
-**My decision and outcome:** I accepted the final implementation after the verification and deployment review described above. The corrective code and tests are in the merged foundation commit. Automated checks can expose defects in generated code, but the owner still has to assess what the tests establish and what remains outside them.
+**My decision and outcome:** I accepted the final implementation only after my own test runs and manual checks confirmed that it worked as intended, and the relevant CI and deployment checks passed. The corrective code and tests are in the merged foundation commit. My review included checking what the tests establish and what remains outside them; acceptance followed that verification.
 
 ### 003 — Catch a deployment configuration gap after local checks passed
 
