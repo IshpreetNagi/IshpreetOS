@@ -13,7 +13,6 @@ const validRoutes = [
 const invalidIds = [
   "spotify",
   "About",
-  "/privacy",
   "/about",
   "",
   "toString",
@@ -29,6 +28,7 @@ const invalidIds = [
 const invalidRoutes = [
   "/spotify",
   "/About",
+  "/privacy",
   "about",
   "",
   "toString",
