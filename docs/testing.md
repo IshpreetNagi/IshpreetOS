@@ -27,7 +27,7 @@ Start the app with `pnpm dev`, then open [localhost:3000](http://localhost:3000)
 | --- | --- |
 | `pnpm lint` | ESLint for application, configuration, validation scripts, and tests |
 | `pnpm typecheck` | Generate Next.js route types, then run strict TypeScript checks |
-| `pnpm content:validate` | Check local Markdown frontmatter/YAML syntax; P1 adds domain schemas |
+| `pnpm content:validate` | Check local Markdown frontmatter/YAML syntax, then validate the required site file through its shared parser and Zod schema; other content contracts are pending |
 | `pnpm test` | Run Vitest unit/component tests once |
 | `pnpm test:watch` | Run Vitest while editing |
 | `pnpm build` | Validate startup configuration and build the production application |
@@ -44,6 +44,7 @@ Start the app with `pnpm dev`, then open [localhost:3000](http://localhost:3000)
 - Full browser journeys belong in `e2e`.
 - `src/server/env/schema.test.ts` tests defaults, explicit production configuration, invalid URLs, and sanitized error output.
 - `scripts/validate-content.test.ts` uses temporary fixture directories to exercise recursive validation and malformed Markdown/YAML.
+- `scripts/validate-content-contracts.test.ts` launches the real `tsx` contract command in temporary content directories to check successful validation and exit code 1 for missing files, syntax errors, duplicate keys, and invalid site fields. It does not modify the real `site.yaml`.
 - The existing page and Base UI button tests verify basic rendering. The home browser test verifies a visible main landmark, the project heading, and page metadata.
 
 The validator's filesystem tests use Node; UI tests use jsdom. Later phases add reducer, geometry, routing, integration, and real-device coverage as their behavior is implemented. Do not replace meaningful invariant coverage with arbitrary project-wide percentages.

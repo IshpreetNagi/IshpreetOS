@@ -21,15 +21,16 @@ The [handbook's content model](planning/PROJECT_HANDBOOK.md#11-content-and-data-
 - `src/server/content/site.parser.ts` accepts YAML text, rejects syntax errors and duplicate keys, converts the document to JavaScript data, and applies the site schema.
 - `src/server/content/site.loader.ts` is guarded by `server-only`. It reads `content/site.yaml` as UTF-8 and reports read, syntax, or schema failures with the file name.
 - Colocated parser tests validate representative text and the real repository file. Loader tests mock file reads and `server-only` to check loading and error messages. Those mocks do not verify Next.js's client-import protection.
-- The homepage is not connected to this loader yet. The existing `content:validate` command still checks syntax only; standalone build-time domain validation and the shared parsing pipeline remain P1 work. The real-file test does validate site content when the unit suite runs.
+- `scripts/validate-content-contracts.ts` runs the same site parser outside Next.js through the development dependency `tsx`. The `content:validate` command runs the existing recursive syntax checker followed by this contract check; either failure produces a nonzero exit status. Command-level tests run the real entry point against temporary content directories, without altering the repository file.
+- The homepage is not connected to this loader yet. Development startup and standalone production builds do not yet invoke the validation command automatically; that wiring remains P1 work. `check:all`, the CI content-validation job, and the real-file unit test already check the site contract.
 
-## P0 validation command
+## Validation command
 
 ```bash
 pnpm content:validate
 ```
 
-The command walks `content` recursively and checks:
+The syntax stage walks `content` recursively and checks:
 
 - YAML syntax in `.yaml` and `.yml` files, including duplicate-key errors.
 - YAML frontmatter syntax in Markdown using `gray-matter` and the same `yaml` parser.
@@ -37,9 +38,9 @@ The command walks `content` recursively and checks:
 - Plain YAML delimiters only, including a closing delimiter; alternative frontmatter engines such as JavaScript are rejected before parsing.
 - Unsupported MDX files and non-regular content entries.
 
-It reports all invalid files and exits with a nonzero status when any check fails. Ordinary Markdown without frontmatter is valid at this foundation stage. File names, required fields, dates, links, and project/experience semantics are not yet validated. The command explicitly reports that domain schemas arrive in P1.
+The syntax stage reports all invalid files and exits with a nonzero status when any check fails. Ordinary Markdown without frontmatter is valid at this foundation stage. Its legacy success message refers to the syntax stage only.
 
-P1 must extend this gate to use the same schemas and parsing rules as runtime content loaders. Successful syntax validation alone must never be presented as full content-contract validation.
+The contract stage then requires `content/site.yaml`, parses it through `parseSiteYaml`, and validates its required fields, text, email, web URLs, and social links. It reports site-file failures and exits with status 1. Other content contracts, dates, and project/experience semantics remain P1 work. Successful site validation must not be presented as validation of those pending contracts.
 
 ## Dependency roles
 
