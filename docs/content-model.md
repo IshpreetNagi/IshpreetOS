@@ -6,14 +6,22 @@ The [handbook's content model](planning/PROJECT_HANDBOOK.md#11-content-and-data-
 
 | Source | Responsibility | Current status |
 | --- | --- | --- |
-| `content/site.yaml` | Public identity, links, resume URL, and default SEO fields | P1 schema/file |
+| `content/site.yaml` | Public identity, links, resume URL, and default SEO fields | P1 schema, parser, loader, and placeholder content implemented |
 | `content/profile.md` | Biography heading, introduction, and long-form body | P1 schema/file |
 | `content/projects/*.md` | One project per file | P1 schema/files |
 | `content/experience/*.md` | One professional position per file | P1 schema/files |
 | `content/credits.yaml` | Creator, source, licence, usage, and required attribution | P1 schema/file |
 | Notion watchlist | Title, media type, and status | Later integration phase |
 
-`content/README.md` explains the directory while contracts are pending. No fabricated portfolio records have been introduced. Content schemas should infer TypeScript types through Zod and return serializable application view data.
+`content/README.md` explains the directory while the remaining contracts are pending. Site contact/link placeholders are explicitly marked; final public values belong to the content task. Content schemas infer TypeScript types through Zod and return serializable application view data.
+
+## P1 site content (in progress)
+
+- `src/server/content/site.schema.ts` defines the strict site and social-link schemas and infers `SiteContent`. Site `title` and `description` also serve as default SEO text; the base URL remains in server environment configuration.
+- `src/server/content/site.parser.ts` accepts YAML text, rejects syntax errors and duplicate keys, converts the document to JavaScript data, and applies the site schema.
+- `src/server/content/site.loader.ts` is guarded by `server-only`. It reads `content/site.yaml` as UTF-8 and reports read, syntax, or schema failures with the file name.
+- Colocated parser tests validate representative text and the real repository file. Loader tests mock file reads and `server-only` to check loading and error messages. Those mocks do not verify Next.js's client-import protection.
+- The homepage is not connected to this loader yet. The existing `content:validate` command still checks syntax only; standalone build-time domain validation and the shared parsing pipeline remain P1 work. The real-file test does validate site content when the unit suite runs.
 
 ## P0 validation command
 
