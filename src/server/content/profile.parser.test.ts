@@ -27,9 +27,15 @@ describe("profile Markdown parser", () => {
     expect(() => parseProfileMarkdown(source)).not.toThrow();
   });
 
-  it.each([{}, { heading: "About" }, { introduction: "Introduction" }, [], "text"])(
-    "rejects frontmatter that does not satisfy the profile contract (%j)",
-    (frontmatter) => {
+  it.each([
+    { name: "missing fields", frontmatter: {} },
+    { name: "missing introduction", frontmatter: { heading: "About" } },
+    { name: "missing heading", frontmatter: { introduction: "Introduction" } },
+    { name: "an array instead of an object", frontmatter: [] },
+    { name: "text instead of an object", frontmatter: "text" },
+  ])(
+    "rejects frontmatter with $name",
+    ({ frontmatter }) => {
       expect(() => parseProfileMarkdown(profileSource(frontmatter))).toThrow(z.ZodError);
     },
   );
