@@ -7,7 +7,7 @@ The [handbook's content model](planning/PROJECT_HANDBOOK.md#11-content-and-data-
 | Source | Responsibility | Current status |
 | --- | --- | --- |
 | `content/site.yaml` | Public identity, links, resume URL, and default SEO fields | P1 schema, parser, loader, and placeholder content implemented |
-| `content/profile.md` | Biography heading, introduction, and long-form body | P1 schema/file |
+| `content/profile.md` | Biography heading, introduction, and long-form body | P1 schema, parsers, and placeholder content implemented; loader pending |
 | `content/projects/*.md` | One project per file | P1 schema/files |
 | `content/experience/*.md` | One professional position per file | P1 schema/files |
 | `content/credits.yaml` | Creator, source, licence, usage, and required attribution | P1 schema/file |
@@ -23,6 +23,12 @@ The [handbook's content model](planning/PROJECT_HANDBOOK.md#11-content-and-data-
 - Colocated parser tests validate representative text and the real repository file. Loader tests mock file reads and `server-only` to check loading and error messages. Those mocks do not verify Next.js's client-import protection.
 - `scripts/validate-content-contracts.ts` runs the same site parser outside Next.js through the development dependency `tsx`. The `content:validate` command runs the existing recursive syntax checker followed by this contract check; either failure produces a nonzero exit status. Command-level tests run the real entry point against temporary content directories, without altering the repository file.
 - The homepage is not connected to this loader yet. Development startup and standalone production builds do not yet invoke the validation command automatically; that wiring remains P1 work. `check:all`, the CI content-validation job, and the real-file unit test already check the site contract.
+
+## Profile Markdown contract (in progress)
+
+`markdown.parser.ts` separates plain YAML frontmatter from the body and rejects missing/malformed delimiters, alternative frontmatter engines, invalid YAML, and duplicate keys. `profile.parser.ts` validates the frontmatter separately, then combines it with the body through the complete profile schema. This rejects unexpected frontmatter fields, including attempts to supply a separate `body` field.
+
+Heading and introduction text is trimmed. The Markdown body must contain non-whitespace text, but its original indentation and surrounding whitespace are preserved because they can affect rendering. Regression tests cover this distinction. The profile loader, rendering, and profile-specific command validation are not connected yet.
 
 ## Validation command
 
