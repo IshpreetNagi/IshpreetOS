@@ -8,8 +8,8 @@ The [handbook's content model](planning/PROJECT_HANDBOOK.md#11-content-and-data-
 | --- | --- | --- |
 | `content/site.yaml` | Public identity, links, resume URL, and default SEO fields | P1 schema, parser, loader, and placeholder content implemented |
 | `content/profile.md` | Biography heading, introduction, and long-form body | P1 schema, parsers, and placeholder content implemented; loader pending |
-| `content/projects/*.md` | One project per file | P1 schema/files |
-| `content/experience/*.md` | One professional position per file | P1 schema/files |
+| `content/projects/*.md` | One project per file | P1 schemas, parser, and test fixtures implemented; content files/loaders pending |
+| `content/experience/*.md` | One professional position per file | P1 schemas, parser, and test fixtures implemented; content files/loaders pending |
 | `content/credits.yaml` | Creator, source, licence, usage, and required attribution | P1 schema/file |
 | Notion watchlist | Title, media type, and status | Later integration phase |
 
@@ -29,6 +29,28 @@ The [handbook's content model](planning/PROJECT_HANDBOOK.md#11-content-and-data-
 `markdown.parser.ts` separates plain YAML frontmatter from the body and rejects missing/malformed delimiters, alternative frontmatter engines, invalid YAML, and duplicate keys. `profile.parser.ts` validates the frontmatter separately, then combines it with the body through the complete profile schema. This rejects unexpected frontmatter fields, including attempts to supply a separate `body` field.
 
 Heading and introduction text is trimmed. The Markdown body must contain non-whitespace text, but its original indentation and surrounding whitespace are preserved because they can affect rendering. Regression tests cover this distinction. The profile loader, rendering, and profile-specific command validation are not connected yet.
+
+## Project and experience contracts (in progress)
+
+Both use the shared Markdown parser, strict frontmatter schemas, and schema-inferred view types. The parsers accept a separate lowercase, hyphen-separated `slug` that the future loaders will derive from the filename; authors do not repeat it in frontmatter. Unknown fields and attempts to override `slug` or `body` in frontmatter are rejected.
+
+### Projects
+
+- Required metadata: `name`, `description`, `status`, `technologies`, `githubUrl`, `screenshot`, and non-negative integer `order`.
+- Status is `completed` or `in-progress`. Completed projects require `completionDate` in valid `YYYY-MM` format; in-progress projects must omit it.
+- `liveUrl` is optional. Repository and live links allow HTTP/HTTPS only; optional does not mean an empty string is valid.
+- Screenshots require a non-blank `alt` and a local image `src` under `/images/projects/`. Traversal, encoded paths, backslashes, queries, fragments, and unsupported image extensions are rejected. File existence and final asset selection are not checked by the schema.
+- Additional Markdown notes may be empty; when present their whitespace is preserved.
+- Collection validation rejects duplicate slugs and duplicate display orders. Sorting by `order` will be applied by the collection loader.
+
+### Experience
+
+- Required metadata: `company`, `role`, `location`, `startDate`, `currentPosition`, `endDate`, and `technologies`.
+- `currentPosition` is an explicit boolean. `true` requires `endDate: null`; `false` requires a valid `YYYY-MM` end month on or after the start month. The display layer will show a current role as start month–Present; the word Present is not stored in the date field.
+- Responsibilities live in the required, non-blank Markdown body. Bullet markers, line breaks, nested list indentation, and code indentation are preserved, not flattened into a paragraph. Rendering as semantic lists and CSS marker customization belong to the renderer, which is not connected yet.
+- Collection validation rejects duplicate slugs but permits multiple roles at the same company. Newest-first ordering will be applied by the collection loader.
+
+Ordinary text fields and technology labels are trimmed. Technology arrays may be empty, but their entries must be non-blank and unique, ignoring case. Dates stay strings, and all bodies preserve Markdown whitespace. Loaders, real content files, command integration for these contracts, and rendered-list checks remain pending.
 
 ## Validation command
 
