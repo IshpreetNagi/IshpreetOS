@@ -8,6 +8,7 @@
 - Keep module tests beside their source; shared setup belongs in `src/test`, and browser journeys belong in `e2e`.
 - Add dependencies in the phase that uses them. Spotify and weather code, credentials, and packages are deferred to v1.1.
 - Run `pnpm check:all` for the phase gate and relevant browser checks. Describe anything that could not be verified.
+- When an error or defect is found, show Ishpreet the failure and explain its cause before changing code to fix it. Wait for his verification and explicit approval, then apply only the approved correction and rerun the relevant checks. Report any newly discovered error for review rather than silently fixing it.
 - Update implementation documentation with code changes. Mark Notion tasks Done only after their acceptance criteria pass.
 - For notable owner decisions, scope changes, or corrections, update `docs/workflow.md` using its detailed entry template. Keep entries in descending ID order: the highest/newest ID at the top and 001 at the bottom; insert 006 above 005, and continue that pattern. Preserve existing entry wording, detail, structure, IDs, and Ishpreet's edits when reordering or adding entries. Preserve attribution, distinguish planned behavior from shipped behavior, and leave owner review to Ishpreet. Evidence links and detailed verification records are not required. Do not turn routine work into a transcript or claim that Ishpreet found an agent-caught defect.
 - Preserve unrelated working changes. Do not commit, push, merge, deploy, or change repository settings unless requested.

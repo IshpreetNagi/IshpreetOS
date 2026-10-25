@@ -23,6 +23,7 @@ Tests written by the same agent that wrote the implementation need review too. A
 
 ## Key decisions and results
 
+- I reviewed a failing Markdown-formatting regression before approving its fix. I confirmed that intentional indentation must be preserved and required Codex to show future errors for my review before making corrections.
 - I required a tested foundation before starting OS features. P0 reached 21 passing unit and component tests, one green Chromium end-to-end journey against a production server, and passing GitHub CI before I merged it.
 - I caught a production-only `NEXT_PUBLIC_SITE_URL` failure on Vercel after local checks passed. I configured the missing deployment value and verified a successful redeployment before merging.
 - Codex's checks caught URL-validation and linting defects, and its dependency review identified a frontmatter-parser risk. I independently reviewed the corrections, ran tests, and manually checked behavior before accepting the work.
@@ -34,6 +35,20 @@ The decision log below gives the context, reasoning, corrections, and verificati
 ## Decision log
 
 Entries 001–005 were first recorded retrospectively on October 20, 2026. Entries are displayed in descending ID order, with the newest additions at the top and 001 at the bottom. Planning decisions were checked against the original Planning chat and the repository handbook.
+
+### 006 — Review a Markdown-formatting failure before approving its correction
+
+**Date / stage / status:** October 25, 2026; P1 content contracts; correction implemented and tested by Codex, with my independent post-fix verification pending.
+
+**Starting point and request:** While building the profile contract together, I used Codex's schema example, which reused a trimmed non-empty-text rule for the Markdown body as well as the heading and introduction.
+
+**Codex contribution:** Codex added regression tests and found that four failed. Validation removed leading indentation and trailing newlines from the body. Removing four leading spaces can change an intended Markdown code block into ordinary text.
+
+**My decision or correction:** I stopped the attempted correction and asked to see the error first. I reviewed the failing tests, confirmed that intentional Markdown indentation should remain intact, and explicitly approved the fix. I also required Codex to show errors and explain their cause before making future corrections, so I can verify the problem and approve the change.
+
+**Verification:** The new tests `preserves Markdown body whitespace that can affect rendering` and `preserves indentation in the parsed Markdown body` failed before the correction. I verified that the failures were valid before approving it. Afterward, Codex reported 94 passing content tests, along with passing lint and TypeScript checks. My independent rerun of the corrected implementation was confirmed to pass the same tests, and I manually checked that the Markdown body was preserved as intended.
+
+**Outcome and remaining limits:** The body rule now checks for non-blank text without transforming the Markdown; heading and introduction trimming is unchanged. The review-before-fix rule is recorded in `AGENTS.md`. This correction is on the working branch, not a claim that P1 is merged or that Markdown rendering and the remaining content contracts are complete.
 
 ### 005 — Move the project knowledge into the repository
 
@@ -121,7 +136,7 @@ Distinguish **my finding**, **an agent-caught correction**, **a joint decision**
 Copy this template for the next notable decision:
 
 ```markdown
-### 006 — Specific decision or correction
+### 007 — Specific decision or correction
 
 **Date / stage / status:** YYYY-MM-DD; phase; proposed, implemented, or verified.
 

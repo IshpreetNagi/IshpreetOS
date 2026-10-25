@@ -1,0 +1,12 @@
+title: "IshpreetOS"
+description: "A personal operating system on the web"
+displayName: "Ishpreet"
+location: "Toronto"
+
+# Temp examples-replace with intended public details later
+email: "ishpreet@example.com"
+resumeUrl: "https://example.com/resume.pdf"
+
+socialLinks:
+  - label: "GitHub"
+    url: "https://github.com/your-username"
