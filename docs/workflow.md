@@ -13,7 +13,7 @@ My philosophy with Codex is to treat it as a junior engineer: I define the work,
 ## The review loop
 
 1. I define the task and its acceptance criteria using the Notion board and [project handbook](planning/PROJECT_HANDBOOK.md).
-2. Codex implements the bounded task on a working branch and explains changes, tests, and limitations.
+2. I write code or delegate a bounded implementation task on a working branch. For delegated work, Codex explains the changes, tests, and limitations.
 3. I review the result, run automated tests, and manually check behavior. Any problems return to implementation and another round of checks.
 4. I check GitHub CI and the Vercel deployment, then decide whether the work is ready to merge and the next phase can begin.
 
@@ -38,17 +38,17 @@ Entries 001–005 were first recorded retrospectively on October 20, 2026. Entri
 
 ### 006 — Review a Markdown-formatting failure before approving its correction
 
-**Date / stage / status:** October 25, 2026; P1 content contracts; correction implemented and tested by Codex, with my independent post-fix verification pending.
+**Date / stage / status:** October 25, 2026; P1 content contracts; correction implemented and tested by Codex, independently verified by me, and merged with the registry and content-contract work.
 
 **Starting point and request:** While building the profile contract together, I used Codex's schema example, which reused a trimmed non-empty-text rule for the Markdown body as well as the heading and introduction.
 
-**Codex contribution:** Codex added regression tests and found that four failed. Validation removed leading indentation and trailing newlines from the body. Removing four leading spaces can change an intended Markdown code block into ordinary text.
+**Codex contribution:** Codex found that four regression tests failed. Validation removed leading indentation and trailing newlines from the body. Removing four leading spaces can change an intended Markdown code block into ordinary text.
 
 **My decision or correction:** I stopped the attempted correction and asked to see the error first. I reviewed the failing tests, confirmed that intentional Markdown indentation should remain intact, and explicitly approved the fix. I also required Codex to show errors and explain their cause before making future corrections, so I can verify the problem and approve the change.
 
 **Verification:** The new tests `preserves Markdown body whitespace that can affect rendering` and `preserves indentation in the parsed Markdown body` failed before the correction. I verified that the failures were valid before approving it. Afterward, Codex reported 94 passing content tests, along with passing lint and TypeScript checks. My independent rerun of the corrected implementation was confirmed to pass the same tests, and I manually checked that the Markdown body was preserved as intended.
 
-**Outcome and remaining limits:** The body rule now checks for non-blank text without transforming the Markdown; heading and introduction trimming is unchanged. The review-before-fix rule is recorded in `AGENTS.md`. This correction is on the working branch, not a claim that P1 is merged or that Markdown rendering and the remaining content contracts are complete.
+**Outcome and remaining limits:** The body rule now checks for non-blank text without transforming the Markdown; heading and introduction trimming is unchanged. The review-before-fix rule is recorded in `AGENTS.md`. This correction was merged in PR #5 with the registry and content-contract work. The overall P1 task remains in progress; Markdown rendering and the remaining content-loading work are not complete.
 
 ### 005 — Move the project knowledge into the repository
 
