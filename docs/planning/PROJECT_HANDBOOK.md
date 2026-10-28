@@ -921,9 +921,9 @@ There is no fixed launch date. A realistic timeline will be estimated only after
 | --- | --- |
 | Ishpreet leads | Portfolio content, application interiors, project cards, experience timeline, settings controls, visual styling, straightforward component tests, and later Zod schemas with guidance |
 | Build together | Registry, content loaders, reducer, actions, responsive controller, preferences, routing behavior, lifecycle, and Playwright journeys |
-| AI leads or scaffolds | Geometry edge cases, `WindowInteractionLayer`, route synchronization, server-only integration boundaries, protected email flow, CI, and production hardening |
+| AI drafts implementation under Ishpreet's direction and review | Geometry edge cases, `WindowInteractionLayer`, route synchronization, server-only integration boundaries, protected email flow, CI, and production hardening |
 
-This split is flexible. Ishpreet remains the product owner and may take over more code for learning or delegate a complex component when it would otherwise stall the project.
+This table describes planned implementation assistance. Ishpreet writes code, directs delegated work, reviews and verifies AI-generated changes, and retains technical decisions and merge approval. The division of coding work can change as the project develops.
 
 ### Branch workflow
 

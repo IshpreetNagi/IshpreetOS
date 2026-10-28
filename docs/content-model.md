@@ -10,7 +10,7 @@ The [handbook's content model](planning/PROJECT_HANDBOOK.md#11-content-and-data-
 | `content/profile.md` | Biography heading, introduction, and long-form body | P1 schema, parsers, and placeholder content implemented; loader pending |
 | `content/projects/*.md` | One project per file | P1 schemas, parser, and test fixtures implemented; content files/loaders pending |
 | `content/experience/*.md` | One professional position per file | P1 schemas, parser, and test fixtures implemented; content files/loaders pending |
-| `content/credits.yaml` | Creator, source, licence, usage, and required attribution | P1 schema/file |
+| `content/credits.yaml` | Creator, source, licence, usage, and required attribution | P1 schema, file, and loader pending |
 | Notion watchlist | Title, media type, and status | Later integration phase |
 
 `content/README.md` explains the directory while the remaining contracts are pending. Site contact/link placeholders are explicitly marked; final public values belong to the content task. Content schemas infer TypeScript types through Zod and return serializable application view data.
@@ -22,7 +22,7 @@ The [handbook's content model](planning/PROJECT_HANDBOOK.md#11-content-and-data-
 - `src/server/content/site.loader.ts` is guarded by `server-only`. It reads `content/site.yaml` as UTF-8 and reports read, syntax, or schema failures with the file name.
 - Colocated parser tests validate representative text and the real repository file. Loader tests mock file reads and `server-only` to check loading and error messages. Those mocks do not verify Next.js's client-import protection.
 - `scripts/validate-content-contracts.ts` runs the same site parser outside Next.js through the development dependency `tsx`. The `content:validate` command runs the existing recursive syntax checker followed by this contract check; either failure produces a nonzero exit status. Command-level tests run the real entry point against temporary content directories, without altering the repository file.
-- The homepage is not connected to this loader yet. Development startup and standalone production builds do not yet invoke the validation command automatically; that wiring remains P1 work. `check:all`, the CI content-validation job, and the real-file unit test already check the site contract.
+- The homepage loads its title and description through the site loader. `pnpm dev` and `pnpm build` run `pnpm content:validate` before starting Next.js, so invalid site content blocks startup or the build. This validation runs at command startup, not continuously on every content edit. `check:all`, the CI content-validation job, and the real-file unit test also check the site contract. Content-derived page metadata remains pending.
 
 ## Profile Markdown contract (in progress)
 
@@ -68,7 +68,7 @@ The syntax stage walks `content` recursively and checks:
 
 The syntax stage reports all invalid files and exits with a nonzero status when any check fails. Ordinary Markdown without frontmatter is valid at this foundation stage. Its legacy success message refers to the syntax stage only.
 
-The contract stage then requires `content/site.yaml`, parses it through `parseSiteYaml`, and validates its required fields, text, email, web URLs, and social links. It reports site-file failures and exits with status 1. Other content contracts, dates, and project/experience semantics remain P1 work. Successful site validation must not be presented as validation of those pending contracts.
+The contract stage then requires `content/site.yaml`, parses it through `parseSiteYaml`, and validates its required fields, text, email, web URLs, and social links. It reports site-file failures and exits with status 1. Profile, project, and experience schemas already validate their contracts in unit tests, including the project/experience date rules, but they are not connected to this command yet. Successful site validation must not be presented as command validation of those other contracts.
 
 ## Dependency roles
 

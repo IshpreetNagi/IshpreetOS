@@ -16,7 +16,7 @@ Implementation documents record the current foundation and the approved contract
 
 - [Architecture](architecture.md) for implemented system boundaries and planned provider composition.
 - [Window behavior](window-behavior.md) for the approved reducer, geometry, bounds, and responsive contract; implementation follows in later phases.
-- [Content model](content-model.md) for current syntax validation and planned schemas/content-loading rules.
+- [Content model](content-model.md) for implemented schemas/parsers, site loading and validation, and the remaining content work.
 - [Testing](testing.md) for local setup, test commands, CI, preview readiness, and the phase gate.
 
 These files should describe the system that actually exists in code. The handbook defines the approved plan; implementation documents evolve with the implementation.
