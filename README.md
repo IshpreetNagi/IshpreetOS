@@ -1,8 +1,8 @@
 # IshpreetOS
 
-IshpreetOS is a retro-modern portfolio being built as a personal operating system, with familiar desktop interactions, real web routes, responsive behavior, and content-first application windows.
+> This project is in active development and is not yet ready for public use. The design and implementation are evolving, and the project is being built in the open to demonstrate the development process.
 
-The repository is currently in P0 (foundation). The homepage is a temporary construction page; the OS shell and applications arrive in later phases.
+IshpreetOS is a retro-modern portfolio being built as a personal operating system, with familiar desktop interactions, real web routes, responsive behavior, and content-first application windows.
 
 ## Run locally
 
