@@ -21,16 +21,18 @@ Use `cp .env.example .env.local` on macOS/Linux. Do not overwrite an existing lo
 
 Start the app with `pnpm dev`, then open [localhost:3000](http://localhost:3000). For a local production run, use `pnpm build` followed by `pnpm start`.
 
+`pnpm dev` and `pnpm build` run content validation before starting Next.js. Both require valid `content/site.yaml` and `content/profile.md`. Validation runs when the command starts. Rerun `pnpm content:validate` to check later content edits while the development server is running.
+
 ## Commands
 
 | Command | Purpose |
 | --- | --- |
 | `pnpm lint` | ESLint for application, configuration, validation scripts, and tests |
 | `pnpm typecheck` | Generate Next.js route types, then run strict TypeScript checks |
-| `pnpm content:validate` | Check local Markdown frontmatter/YAML syntax, then validate the required site file through its shared parser and Zod schema; other content contracts are pending |
+| `pnpm content:validate` | Check local Markdown frontmatter/YAML syntax, then validate required site and profile files through their shared parsers and Zod schemas |
 | `pnpm test` | Run Vitest unit/component tests once |
 | `pnpm test:watch` | Run Vitest while editing |
-| `pnpm build` | Validate startup configuration and build the production application |
+| `pnpm build` | Validate content and startup configuration, then build the production application |
 | `pnpm check:all` | Run lint, type checks, content validation, unit tests, and production build in sequence |
 | `pnpm test:e2e` | Run Playwright Chromium journeys |
 | `pnpm test:all` | Run unit/component and browser tests |
@@ -44,7 +46,9 @@ Start the app with `pnpm dev`, then open [localhost:3000](http://localhost:3000)
 - Full browser journeys belong in `e2e`.
 - `src/server/env/schema.test.ts` tests defaults, explicit production configuration, invalid URLs, and sanitized error output.
 - `scripts/validate-content.test.ts` uses temporary fixture directories to exercise recursive validation and malformed Markdown/YAML.
-- `scripts/validate-content-contracts.test.ts` launches the real `tsx` contract command in temporary content directories to check successful validation and exit code 1 for missing files, syntax errors, duplicate keys, and invalid site fields. It does not modify the real `site.yaml`.
+- `src/server/content/profile.loader.test.ts` checks the profile file path, UTF-8 reading, returned data, and file-specific errors using a mocked file read and the real parser. It covers read failures, malformed or missing frontmatter, duplicate keys, missing required fields, and a rejection without an `Error` object. The server-only marker is mocked for Vitest.
+- `scripts/validate-content-contracts.test.ts` launches the real `tsx` contract command in temporary content directories. The success case checks both site and profile success messages and empty error output. Failure cases check exit code 1 and useful file-specific error messages.
+- Profile command failures cover a missing file, malformed YAML, missing frontmatter, duplicate keys, a missing introduction, a blank body, and an unexpected field. Each starts with valid site content and checks the site-success output so that the failure is attributable to profile validation.
 - The existing page and Base UI button tests verify basic rendering. The home browser test verifies a visible main landmark, the project heading, and page metadata.
 
 The validator's filesystem tests use Node; UI tests use jsdom. Later phases add reducer, geometry, routing, integration, and real-device coverage as their behavior is implemented. Do not replace meaningful invariant coverage with arbitrary project-wide percentages.
