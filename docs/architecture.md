@@ -14,8 +14,8 @@ Source task: [Foundation: Establish repository architecture, documentation, and 
 - `src/styles` owns initial tokens, document defaults, and font-role fallbacks. `src/app/globals.css` composes them with Tailwind and the existing shadcn stylesheet.
 - `src/os/app-registry` defines the four application IDs, metadata, route lookup, the `/privacy` alias to Settings, and a separate dynamic component-loader map. These contracts do not implement Next.js application routes or desktop navigation yet.
 - `src/apps` contains placeholder About, Projects, Experience, and Settings components; application interiors and windows are not implemented yet.
-- `src/server/content` contains site, profile, project, and experience schemas and parsers, plus the shared Markdown parser and a server-only site loader. Profile/project/experience loaders, credits, and Markdown rendering remain pending.
-- `scripts/validate-content.mjs` checks local Markdown frontmatter and YAML syntax. `scripts/validate-content-contracts.ts` then validates the site contract. `pnpm dev` and `pnpm build` run both stages through `pnpm content:validate` before starting Next.js; other content contracts are not connected to this command yet.
+- `src/server/content` contains site, profile, project, and experience schemas and parsers, plus the shared Markdown parser and server-only site and profile loaders. The profile loader returns validated biography data. About integration, project and experience loaders, credits, and Markdown rendering remain pending.
+- `scripts/validate-content.mjs` checks local Markdown frontmatter and YAML syntax. `scripts/validate-content-contracts.ts` then validates the site and profile contracts through their pure parsers. Its shared helper attaches the affected file name to errors, and a failed contract exits with code 1. `pnpm dev` and `pnpm build` run both stages through `pnpm content:validate` before starting Next.js.
 - Vitest, Testing Library, and Playwright verify the foundation. GitHub Actions runs the quality checks on pull requests to `main` and pushes to `main`.
 
 The starter page, demo SVGs, generated favicon, Google-font downloads, dark-theme defaults, animation CSS dependency, and analytics runtime have been removed. Local licensed fonts and analytics return in their approved implementation phases.
@@ -29,7 +29,7 @@ The starter page, demo SVGs, generated favicon, Google-font downloads, dark-them
 | `src/lib` | Small generic utilities such as `cn` | Existing foundation |
 | `src/os/app-registry` | Static application definitions, lookup, navigation targets, and the component-loader map | P1 |
 | `src/apps` | Placeholder application components; final interiors arrive later | P1 |
-| `src/server/content` | Local-content schemas, pure parsers, and the guarded site loader | P1 |
+| `src/server/content` | Local-content schemas, pure parsers, and guarded site and profile loaders | P1 |
 | `src/server/env` | Environment schemas and guarded server configuration | P0 |
 | `src/styles` | Shared design tokens, base rules, and font roles | P0 |
 | `src/test` | Shared test setup and content fixtures | Existing foundation; fixtures added in P1 |

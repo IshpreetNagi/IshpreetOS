@@ -7,7 +7,7 @@ The [handbook's content model](planning/PROJECT_HANDBOOK.md#11-content-and-data-
 | Source | Responsibility | Current status |
 | --- | --- | --- |
 | `content/site.yaml` | Public identity, links, resume URL, and default SEO fields | P1 schema, parser, loader, and placeholder content implemented |
-| `content/profile.md` | Biography heading, introduction, and long-form body | P1 schema, parsers, and placeholder content implemented; loader pending |
+| `content/profile.md` | Biography heading, introduction, and long-form body | P1 schema, parsers, server-only loader, command validation, and placeholder content implemented |
 | `content/projects/*.md` | One project per file | P1 schemas, parser, and test fixtures implemented; content files/loaders pending |
 | `content/experience/*.md` | One professional position per file | P1 schemas, parser, and test fixtures implemented; content files/loaders pending |
 | `content/credits.yaml` | Creator, source, licence, usage, and required attribution | P1 schema, file, and loader pending |
@@ -21,14 +21,20 @@ The [handbook's content model](planning/PROJECT_HANDBOOK.md#11-content-and-data-
 - `src/server/content/site.parser.ts` accepts YAML text, rejects syntax errors and duplicate keys, converts the document to JavaScript data, and applies the site schema.
 - `src/server/content/site.loader.ts` is guarded by `server-only`. It reads `content/site.yaml` as UTF-8 and reports read, syntax, or schema failures with the file name.
 - Colocated parser tests validate representative text and the real repository file. Loader tests mock file reads and `server-only` to check loading and error messages. Those mocks do not verify Next.js's client-import protection.
-- `scripts/validate-content-contracts.ts` runs the same site parser outside Next.js through the development dependency `tsx`. The `content:validate` command runs the existing recursive syntax checker followed by this contract check; either failure produces a nonzero exit status. Command-level tests run the real entry point against temporary content directories, without altering the repository file.
-- The homepage loads its title and description through the site loader. `pnpm dev` and `pnpm build` run `pnpm content:validate` before starting Next.js, so invalid site content blocks startup or the build. This validation runs at command startup, not continuously on every content edit. `check:all`, the CI content-validation job, and the real-file unit test also check the site contract. Content-derived page metadata remains pending.
+- `scripts/validate-content-contracts.ts` runs the site and profile parsers outside Next.js through the development dependency `tsx`. The `content:validate` command runs the recursive syntax checker followed by these contract checks. A failure in either stage produces a nonzero exit status. Command-level tests run the real entry point against temporary content directories.
+- The homepage loads its title and description through the site loader. `pnpm dev` and `pnpm build` run `pnpm content:validate` before starting Next.js, so invalid site or profile content blocks startup or the build. Validation runs at command startup. Content edits made while the development server is running can be checked by rerunning `pnpm content:validate`. `check:all` and the CI content-validation job also check both contracts. Content-derived page metadata remains pending.
 
 ## Profile Markdown contract (in progress)
 
 `markdown.parser.ts` separates plain YAML frontmatter from the body and rejects missing/malformed delimiters, alternative frontmatter engines, invalid YAML, and duplicate keys. `profile.parser.ts` validates the frontmatter separately, then combines it with the body through the complete profile schema. This rejects unexpected frontmatter fields, including attempts to supply a separate `body` field.
 
-Heading and introduction text is trimmed. The Markdown body must contain non-whitespace text, but its original indentation and surrounding whitespace are preserved because they can affect rendering. Regression tests cover this distinction. The profile loader, rendering, and profile-specific command validation are not connected yet.
+Heading and introduction text is trimmed. The Markdown body must contain non-whitespace text, but its original indentation and surrounding whitespace are preserved because they can affect rendering. Regression tests cover this distinction.
+
+`src/server/content/profile.loader.ts` is guarded by `server-only`. Its `loadProfileContent()` function reads `content/profile.md` as UTF-8, passes the text through `parseProfileMarkdown`, and returns validated `ProfileContent`. Read, frontmatter, and schema failures include the file name and the underlying error message. A rejection without an `Error` object uses the fallback message `Unknown content error`.
+
+Profile loader tests mock the file read and exercise the real parser. They cover successful loading, read failures, malformed YAML, missing frontmatter, duplicate keys, missing required fields, and the fallback error message. Next.js enforces the server-only import boundary during application builds.
+
+The validation command also reads and validates the profile through the same pure parser. Profile rendering and About application integration remain pending.
 
 ## Project and experience contracts (in progress)
 
@@ -68,7 +74,11 @@ The syntax stage walks `content` recursively and checks:
 
 The syntax stage reports all invalid files and exits with a nonzero status when any check fails. Ordinary Markdown without frontmatter is valid at this foundation stage. Its legacy success message refers to the syntax stage only.
 
-The contract stage then requires `content/site.yaml`, parses it through `parseSiteYaml`, and validates its required fields, text, email, web URLs, and social links. It reports site-file failures and exits with status 1. Profile, project, and experience schemas already validate their contracts in unit tests, including the project/experience date rules, but they are not connected to this command yet. Successful site validation must not be presented as command validation of those other contracts.
+The contract stage requires `content/site.yaml` and `content/profile.md`. It validates the site first through `parseSiteYaml`, then the profile through `parseProfileMarkdown`. The shared `validateContentFile` helper reads each file, invokes its parser, and adds the content label and file name to failures. The final `main().catch(...)` prints the error and sets exit code 1. Validation stops at the first failed contract.
+
+Successful validation prints a schema-valid message for each file. The site contract checks required fields, text, email, web URLs, and social links. The profile contract checks frontmatter syntax, required heading and introduction fields, and a non-blank body. The command imports the pure parsers directly because it runs outside Next.js.
+
+Project and experience schemas are covered by unit tests, including their date rules. Their loaders and command integration remain pending.
 
 ## Dependency roles
 
