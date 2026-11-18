@@ -1,24 +1,41 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseSiteYaml } from "@/server/content/site.parser";
+import { parseProfileMarkdown } from "@/server/content/profile.parser";
+
+async function validateContentFile(
+  filename: string,
+  label: string,
+  parse: (source: string) => unknown,
+) {
+  try {
+    const source = await readFile(
+      join(process.cwd(), "content", filename),
+      "utf8",
+    );
+
+    parse(source);
+
+    console.log(`${label} content schema valid: content/${filename}`);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown content error";
+
+    throw new Error(
+      `${label} content validation failed for content/${filename}: ${message}`,
+    );
+  }
+}
 
 async function main() {
-  const filename = join(process.cwd(), "content", "site.yaml");
-  const source = await readFile(filename, "utf8");
-
-  parseSiteYaml(source);
-
-  console.log("Site content schema valid: content/site.yaml");
+  await validateContentFile("site.yaml", "Site", parseSiteYaml);
+  await validateContentFile("profile.md", "Profile", parseProfileMarkdown);
 }
 
 main().catch((error: unknown) => {
   const message =
     error instanceof Error ? error.message : "Unknown content error";
 
-  console.error(
-    "Site content validation failed for content/site.yaml:",
-    message,
-  );
-
+  console.error(message);
   process.exitCode = 1;
 });
