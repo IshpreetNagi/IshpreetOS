@@ -14,7 +14,7 @@
 
 This handbook is the authoritative planning baseline for IshpreetOS. It translates the project-planning conversation into product rules, interaction invariants, design direction, technical architecture, implementation order, and release criteria. It is written for Ishpreet, collaborators, and future AI agents who need to understand the project before changing it.
 
-The designed PDF edition is available at [IshpreetOS Project Handbook](PROJECT_HANDBOOK.pdf).
+The designed PDF edition is available at [IshpreetOS Project Handbook](PROJECT_HANDBOOK.pdf). It is a presentation snapshot of the planning baseline. This Markdown handbook contains subsequent approved contract and architecture updates.
 
 ## How to use this handbook
 
@@ -22,6 +22,8 @@ The designed PDF edition is available at [IshpreetOS Project Handbook](PROJECT_H
 - Use the responsive and window-behavior chapters as acceptance criteria, not loose inspiration.
 - Use the repository architecture and dependency chapters before adding files or packages.
 - Use the Implementation Sequence and Release Gate when selecting the next task.
+- Use Git history, branches, and pull requests together with the Notion task board to establish where work left off and what remains.
+- Use [Testing and phase gate](../testing.md) for local setup, test commands, browser-test configuration, and CI instructions.
 - Treat items marked **Prototype** or **Validate** as deliberately unresolved. Do not silently convert them into permanent decisions.
 - When a future decision changes this baseline, update both the repository documentation and the corresponding Notion task.
 
@@ -111,7 +113,7 @@ The project may reference familiar desktop conventions—cascading windows, task
 - Routes and metadata derive from registry data.
 - Portfolio content lives in validated Markdown and YAML.
 - Persistent preferences live in the preferences system, not window state.
-- The Notion board tracks execution; repository documents explain the implementation model.
+- Git history and pull requests record implementation changes and merges. The Notion board tracks execution. This handbook records the approved product rules, content contracts, and architecture.
 
 ### Complexity must earn its place
 
@@ -516,6 +518,68 @@ content/
 | `credits.yaml` | Asset name, creator, source, licence, usage, and required attribution |
 | Notion data source | Watchlist title, media type, and status only |
 
+### Shared content-contract rules
+
+- Infer content types from Zod schemas and return serializable application data.
+- Use strict schemas for site configuration and Markdown frontmatter. Reject unknown fields, including attempts to override a parser-supplied `body` or `slug`.
+- Derive project and experience slugs from filenames. Slugs use lowercase, hyphen-separated identifiers and are passed into the parsers separately from the Markdown source.
+- Trim ordinary text fields and technology labels, and require non-blank values for required text.
+- Check Markdown bodies for blankness without trimming their contents. Preserve indentation, line breaks, nested bullet lists, and surrounding whitespace that can affect rendering.
+- Technology arrays may be empty. Their entries must be non-blank and unique, ignoring case.
+- Store month values as valid `YYYY-MM` strings.
+- Web links use HTTP or HTTPS. Optional links must be omitted when absent instead of supplied as empty strings.
+- Keep content and test fixtures explicit about temporary public identity/link values. Replace placeholders through the portfolio-content task.
+
+### Site content contract
+
+`site.yaml` requires `title`, `description`, `displayName`, `location`, `email`, `resumeUrl`, and `socialLinks`. The title, description, display name, and location are trimmed non-blank text. The email must be valid, and the resume URL uses HTTP or HTTPS.
+
+Each social link is a strict object containing a non-blank `label` and an HTTP/HTTPS `url`. The site's title and description also provide default SEO text. The base URL belongs to server environment configuration.
+
+### Profile content contract
+
+- Frontmatter requires `heading` and `introduction`, both trimmed and non-blank.
+- The biography is the Markdown body and must contain non-whitespace text.
+- Validate frontmatter separately before combining it with the parser-supplied body, so authors cannot override the body through a frontmatter field.
+- Preserve body whitespace, including indentation that can represent code or nested lists.
+
+### Project content contract
+
+| Field | Rule |
+| --- | --- |
+| `name`, `description` | Required non-blank text |
+| `status` | `completed` or `in-progress` |
+| `completionDate` | Required valid `YYYY-MM` for completed projects and omitted for in-progress projects |
+| `technologies` | Array following the shared technology-label rules |
+| `githubUrl` | Required HTTP/HTTPS URL |
+| `liveUrl` | Optional HTTP/HTTPS URL |
+| `screenshot` | Required strict object with local `src` and non-blank `alt` |
+| `order` | Required non-negative integer |
+| `slug` | Derived from the filename |
+| `body` | Additional Markdown notes, which may be empty and preserve whitespace |
+
+Screenshot paths stay under `/images/projects/`. Reject traversal segments, empty path segments, encoded paths, backslashes, control characters, queries, fragments, and unsupported image extensions. Supported extensions are AVIF, GIF, JPG/JPEG, PNG, SVG, and WebP. Schema validation checks the path and alternative text. Asset selection and file-existence checks are separate responsibilities.
+
+Project collections reject duplicate slugs and duplicate display orders. Collection loaders sort by `order`.
+
+### Experience content contract
+
+| Field | Rule |
+| --- | --- |
+| `company`, `role`, `location` | Required non-blank text |
+| `startDate` | Required valid `YYYY-MM` |
+| `currentPosition` | Required boolean |
+| `endDate` | `null` for a current position, otherwise a valid `YYYY-MM` on or after the start month |
+| `technologies` | Array following the shared technology-label rules |
+| `slug` | Derived from the filename |
+| `body` | Required non-blank Markdown containing responsibilities |
+
+`currentPosition: true` requires `endDate: null`. The display layer formats the date range as start month to Present. The word Present is generated for display. `currentPosition: false` requires an end month.
+
+Keep responsibility bullet points, nested list indentation, and line breaks in the Markdown body. Render them as semantic lists and customize marker appearance through styling.
+
+Experience collections reject duplicate slugs and allow multiple roles at the same company. Collection loaders sort newest start month first.
+
 ### Validation
 
 - Zod is the single validation system for content, environment variables, forms, settings loaded from storage, and external API payloads.
@@ -524,6 +588,16 @@ content/
 - Malformed external data becomes a controlled unavailable result instead of crashing the desktop.
 - Markdown uses `gray-matter`, `react-markdown`, and `remark-gfm`, with no raw HTML or MDX.
 
+Separate pure parsing from file access. The shared Markdown parser separates plain YAML frontmatter from the body and rejects malformed delimiters, unsupported frontmatter engines, malformed YAML, and duplicate keys. Domain parsers apply the relevant schema. YAML configuration parsing also rejects syntax errors and duplicate keys before validating the resulting data.
+
+`scripts/validate-content.mjs` walks `content/` recursively. It checks `.yaml`, `.yml`, and Markdown frontmatter, requires a mapping at the root of YAML/frontmatter, and rejects unsupported MDX and non-regular content entries. Plain YAML frontmatter uses opening and closing `---` delimiters. The syntax stage collects invalid files and exits with a nonzero status when any fail. Ordinary Markdown without frontmatter can pass this generic stage, while an individual content contract can require frontmatter.
+
+`scripts/validate-content-contracts.ts` runs the pure parsers through `tsx` outside Next.js. The command requires `content/site.yaml` and `content/profile.md`, validating site content first and profile content second. Its `validateContentFile` helper reads each file as UTF-8, calls its parser, prints a success message, and attaches the content label and file name to failures. Contract validation stops at the first failure. The outer `main().catch(...)` prints the error and sets exit code 1.
+
+`pnpm content:validate` runs the syntax stage followed by the contract stage. `pnpm dev` and `pnpm build` invoke this command before starting Next.js, so either stage can block startup or a build. Validation runs when the command starts. Rerun it to check content edits made while the development server is running. `pnpm check:all` and the CI content-validation job also invoke these checks.
+
+Use Git and the Notion content tasks to establish which additional content contracts have been wired into the command. Add their command-level checks alongside their loaders. Detailed test commands and setup remain in [Testing and phase gate](../testing.md).
+
 ### Loading strategy
 
 - All small local content loads and validates on the server when the desktop is prepared.
@@ -531,6 +605,12 @@ content/
 - Local content does not require a browser fetch for each application opening.
 - Application UI code may still load separately.
 - External integrations remain lazy and cannot block desktop display.
+
+`src/server/content/site.loader.ts` and `profile.loader.ts` are guarded by `import "server-only"`. They read their content files as UTF-8, use the corresponding pure parser, and return schema-inferred data. `loadProfileContent()` returns `ProfileContent` from `parseProfileMarkdown`. Read or validation failures include the affected file name and underlying reason. A rejection without an `Error` object uses `Unknown content error` as the fallback reason.
+
+Loader tests can mock file reads and the `server-only` marker while exercising the real parsers. Next.js enforces the server-only import boundary in the application build. Regression tests preserve Markdown indentation and cover invalid file content. Command tests use isolated temporary files and exercise the real command's output and exit status.
+
+`content.rules.ts` holds shared field rules, schemas define domain contracts, parsers validate supplied text, and loaders own file access. Keep provider credentials out of local portfolio content. Place public images in `public/images` and keep selectable wallpapers together in `public/wallpapers`. Strip EXIF/location metadata from personal photography.
 
 ## 12. External integrations
 
@@ -715,6 +795,8 @@ A comprehensive accessibility programme is deferred, but basic quality is not op
 
 ## 16. Repository and module architecture
 
+The foundation architecture was established under [Foundation: Establish repository architecture, documentation, and CI](https://www.notion.so/3c8f4b74d2b58034b5f6d7803ca16bfb). Use the module layout and responsibilities below when adding code. Determine implementation progress from Git and Notion.
+
 ```text
 IshpreetOS/
 |-- content/
@@ -791,6 +873,35 @@ IshpreetOS/
 - `src/components/shared` contains genuinely cross-application presentation components.
 - Feature-specific components stay beside their owner.
 - `src/lib` remains small and generic; it is not a dumping ground.
+- `src/server/env` owns environment schemas and the guarded configuration entry point.
+- `src/server/content` owns local-content schemas, pure parsers, and guarded loaders.
+- `scripts` owns repository validation commands and their tests. `src/test` holds shared test setup and fixtures, and `e2e` holds browser journeys.
+- `.github` owns CI configuration, the pull-request template, and repository assistant guidance.
+- `docs/planning` holds the approved handbook and historical design references. The separate [testing guide](../testing.md) holds practical setup and verification instructions.
+
+Introduce directories with their first real files. Create OS modules, application interiors, server actions/integrations, shared components, and asset directories when their implementation phase needs them.
+
+### Foundation implementation entry points
+
+| Entry point | Responsibility |
+| --- | --- |
+| `src/app/page.tsx` | Construction-page entry point that loads its title and description from validated site content |
+| `src/app/layout.tsx` | Root layout and initial metadata using validated server configuration |
+| `src/os/app-registry` | Static application IDs, metadata, route lookup, Privacy alias targets, and a separate dynamic component-loader map |
+| `src/apps` | About, Projects, Experience, and Settings components, starting with placeholders during the foundation phases |
+| `src/server/content` | Site, profile, project, and experience schemas/parsers, the shared Markdown parser, and local-content loaders |
+| `src/server/env/schema.ts` | Pure environment parser that can run in tests and configuration |
+| `src/server/env/index.ts` | Guarded server configuration entry point used by application code |
+| `next.config.ts` | Early environment validation for startup, route type generation, and production builds |
+| `scripts/validate-content.mjs` | Recursive content-syntax validation |
+| `scripts/validate-content-contracts.ts` | Content-file validation through shared pure parsers |
+| `src/styles` | Design tokens, document defaults, and font-role fallbacks |
+
+The registry defines the four core application IDs and resolves `/privacy` to the Settings privacy target. Its lookup and component-map contracts support the later Next.js route and desktop-navigation implementations.
+
+The foundation cleanup removed the starter page, demo SVGs/favicon, Google-font downloads, generated dark-theme assumptions, animation CSS dependency, and analytics runtime. The Base UI button remains a foundational primitive. Licensed local fonts and analytics belong to their approved implementation phases.
+
+These entry points describe the foundation's organization. When resuming work, inspect the active branch, commits, pull requests, code, and Notion task to determine which planned modules and integrations exist.
 
 ### Provider composition
 
@@ -807,11 +918,16 @@ The wrapper is convenient, but the providers remain independent. A clock-format 
 ### Import rules
 
 - Keep the existing `@/*` path alias.
-- Use named exports for normal modules; use default exports only where Next.js requires them.
+- Use named exports for normal modules. Framework entry points and configuration may use default exports where their APIs require them.
 - Avoid giant barrel files. A small `index.ts` is allowed only as an intentional public module boundary.
 - Applications may call the OS command API but may not import reducer internals.
 - Client code may not import from `@/server`.
 - Applications may not import directly from one another; promote truly shared code deliberately.
+- Guard server-only runtime entry points with `import "server-only"`. Keep pure schemas and parsers independently testable.
+- Centralize environment reads in the guarded configuration entry point instead of reading `process.env` throughout components.
+- Configuration code executes outside the React module graph. `next.config.ts` uses the pure environment parser directly.
+
+The server-only marker provides a Next.js build-time guard. Verify additional import-boundary lint enforcement from the actual lint configuration and Git changes.
 
 ### Styling ownership
 
@@ -819,11 +935,30 @@ The wrapper is convenient, but the providers remain independent. A clock-format 
 - `base.css` owns document-level defaults.
 - `typography.css` owns font roles and readable defaults.
 - `motion.css` owns shared motion variables and reduced-motion rules.
-- `globals.css` imports the system and Tailwind.
+- `src/app/globals.css` composes the shared style files with Tailwind and the existing shadcn stylesheet.
 - Tailwind handles normal component layout; narrowly scoped CSS Modules handle complex geometry or effects.
 - Do not introduce CSS-in-JS or repeated arbitrary hex values in applications.
 
+The initial styles provide font-role fallbacks. Introduce licensed local fonts and `motion.css` with their approved implementation phases. Validate final font families and colour values through the handbook's prototype process.
+
+### Environment and deployment contract
+
+- Document variable names and safe placeholders only. Never copy real `.env.local` contents, API keys, tokens, passwords, private service URLs, or credential-bearing dashboard output into this public handbook or Notion progress notes.
+- Copy `.env.example` to `.env.local` for local configuration, preserving any existing local values.
+- `NEXT_PUBLIC_SITE_URL` must be a valid HTTP or HTTPS URL. Development and test fall back to `http://localhost:3000` when it is absent. Production builds require an explicit value.
+- The site URL is public metadata and retains its `NEXT_PUBLIC_` name. Later provider credentials use server-only variable names behind guarded modules.
+- Environment-validation errors identify field names without exposing supplied values.
+- Use the Next.js preset, Node 22, and the repository's pinned pnpm version on Vercel.
+- Configure the intended public site origin separately for production and preview deployments.
+- Foundation CI uses an explicit example site origin and requires no provider credentials. GitHub Actions runs quality checks on pull requests to `main` and pushes to `main`.
+- Configure Vercel Git integration so pull requests receive previews and merges to `main` deploy production.
+- Vercel connections, deployment environment values, and GitHub branch protection are account settings. Verify them through the relevant account and PR checks.
+
+Refer to [Testing and phase gate](../testing.md) for executable setup commands, CI jobs, browser-test setup, and local production checks.
+
 ## 17. Testing and quality strategy
+
+The principles and acceptance criteria are recorded here. [Testing and phase gate](../testing.md) is the separate reference for installation, environment setup, commands, browser testing, and CI operation.
 
 ### Test placement
 
@@ -938,9 +1073,13 @@ This table describes planned implementation assistance. Ishpreet writes code, di
 ### Planning and execution sources
 
 - This handbook records the approved product and implementation baseline.
-- Repository documentation evolves with implemented architecture.
+- Keep lasting architecture and content-contract decisions in this handbook.
+- Git history, branches, and pull requests record what changed and merged. Use their relevant check results when assessing verification.
 - The Notion board records status, phase, build order, priority, release, type, acceptance criteria, and dependencies.
+- Record completed and in-progress work in the relevant Notion task card. Add or update nested bullet notes directly beneath the requirement or task bullet they describe, preserving the existing task structure. Distinguish implementation progress from verification and Ishpreet's approval; completing one bullet does not make the whole task Done.
 - Code and tests are the final evidence of implemented behavior.
+- Resume work by checking Git and the current Notion task against the implementation. Track task status and next steps in those sources.
+- The separate testing guide records repeatable setup and verification procedures. Keep implementation-progress diaries and task-status tables out of repository documentation.
 
 ## 20. v1 release gate
 
@@ -1011,8 +1150,8 @@ This table describes planned implementation assistance. Ishpreet writes code, di
 
 ### Before changing code
 
-1. Read this handbook and the repository architecture documents.
-2. Inspect the current Notion task and its acceptance criteria.
+1. Read this handbook for approved product rules, architecture, and content contracts. Use the separate testing guide when setup or verification instructions are needed.
+2. Inspect the active Git branch, relevant commits and pull requests, and the current Notion task with its acceptance criteria to establish where work left off.
 3. Inspect the repository instead of assuming the starter structure still applies.
 4. Identify the current responsive-mode, lifecycle, routing, and persistence implications of the change.
 5. Check whether the requested work belongs to v1 or v1.1.

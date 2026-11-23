@@ -1,6 +1,6 @@
 ## Change
 
-Notion Task: [link](LINK HERE)
+Notion Task: [text](LINK HERE)
 
 Describe the problem, the resulting behavior, and the linked Notion task.
 
